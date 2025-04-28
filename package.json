@@ -23,6 +23,7 @@
 		"vite": "^6.2.5"
 	},
 	"dependencies": {
-		"pocketbase": "^0.26.0"
+		"pocketbase": "^0.26.0",
+		"puppeteer-core": "^24.7.2"
 	}
 }

@@ -83,8 +83,8 @@
 
     <div class="p-4 flex flex-col h-full">
         <div class="mb-3">
-            <h2 class="text-lg font-bold text-gray-800 mb-1.5 leading-tight">{name}</h2>
-            <span class={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${countyColor.bg} ${countyColor.text}`}>
+            <h2 class="text-lg capitalize font-bold text-gray-800 mb-1.5 leading-tight">{name}</h2>
+            <span class={`inline-block lowercase text-xs font-semibold px-2 py-0.5 rounded ${countyColor.bg} ${countyColor.text}`}>
         {county}
       </span>
         </div>
@@ -111,7 +111,7 @@
             {/if}
         </div>
         <a
-                href="/"
+                href="/GalList/{id}"
                 class={`w-full text-center py-2 text-xs font-semibold rounded ${countyColor.bg} ${countyColor.text} ${countyColor.border} border transition-colors duration-200 ${countyColor.hover} hover:text-white`}>
             See More
         </a>

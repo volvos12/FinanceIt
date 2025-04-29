@@ -1,23 +1,9 @@
 <script lang="ts">
-    import {pb, currentUser} from '$lib/pocketbase.js'
-    import {page} from '$app/state'
-    import {onMount} from "svelte";
-    const id = page.params.id
-    let gal:any = $state({});
-    let Teritoriu:any = $state([]);
-    let files:any = $state([]);
-    onMount(async() => {
-        try {
-            gal = await pb.collection('GALs').getOne(id);
-        } catch (error) {
-            console.error('Error fetching GAL:', error);
-        }
-        Teritoriu = gal.Acoperire_teritoriala.split(',')
-        files = await pb.collection('files').getList(1, 50, {
-            filter: `gal="${id}"`
-        });
+    export let data;
+    let gal = data?.data?.gal ?? null;
+    let Teritoriu = data?.data?.Teritoriu ?? [];
 
-    })
+
 
 </script>
 
@@ -79,7 +65,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">Documente și fișiere</h3>
 
                         <div class="space-y-4">
-                            {#each files?.items || [] as file}
+                          <!--  {#each files?.items || [] as file}
                                 <div class="border border-gray-200 rounded-lg p-4 hover:bg-purple-50 transition-colors">
                                     <div class="flex items-start">
                                         <div class="bg-purple-100 p-2 rounded-md mr-4">
@@ -108,7 +94,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            {/each}
+                            {/each} -->
                         </div>
                     </div>
                 </div>

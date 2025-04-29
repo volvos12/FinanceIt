@@ -71,7 +71,7 @@
                     <!-- Desktop navigation -->
                     <div class="hidden sm:ml-8 sm:flex sm:space-x-6">
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Home</a>
-                        <a href="/GalList" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Galuri</a>
+                        <a data-sveltekit-preload-data="hover" href="/GalList" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Galuri</a>
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Counties</a>
                         <a href="/" class="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium">Favorites</a>
                     </div>
@@ -120,7 +120,7 @@
             <div class="sm:hidden">
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Home</a>
-                    <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Directory</a>
+                    <a data-sveltekit-preload-data="hover" href="/GalList" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Galuri</a>
                     <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Counties</a>
                     <a href="/" class="block px-3 py-2 text-base font-medium text-purple-700 hover:text-purple-800 hover:bg-purple-50">Favorites</a>
                 </div>

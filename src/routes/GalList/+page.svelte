@@ -14,9 +14,8 @@
         FavoritesList // Lista cu elementele favorite <string[]>
     } from "$lib/stores";
 
-    let GALs: any[] = [];
     const Judete = [
-        "Alba", "Arad", "Arges", "Bacau", "Bihor", "Bistrița Nasaud", "Botosani", "Braila", "Brasov",
+        "Alba", "Arad", "Arges", "Bacau", "Bihor", "Bistrita Nasaud", "Botosani", "Braila", "Brasov",
             "Buzau", "Calarasi", "Caras Severin", "Cluj", "Covasna", "Constanta", "Dambovita",
         "Dolj", "Galati", "Giurgiu", "Gorj", "Harghita", "Hunedoara", "Ialomita", "Iasi", "Ilfov",
         "Maramures", "Mehedinti", "Mures", "Neamt", "Olt", "Prahova", "Salaj", "Satu Mare", "Sibiu",
@@ -25,17 +24,10 @@
     let currentPage = 1;
     let itemsPerPage = 50;
 
-
+    export let data;
+    const GALs = data?.data?.GALs;
     onMount(async () => {
         try {
-            const totalCount = await pb.collection('GALs').getFullList();
-            const resultList = await pb.collection('GALs').getList(1, totalCount.length, {
-                sort: "created",
-            });
-            GALs = resultList.items; //getting all gals
-
-
-            //getting all favorites before another one is added in the Card component
             if($currentUser){
                 let resultList = await pb.collection("favorites").getFullList({
                     expand: "gal",

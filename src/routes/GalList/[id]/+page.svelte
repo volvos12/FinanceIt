@@ -1,6 +1,7 @@
 <script lang="ts">
     import Device from 'svelte-device-info'
     import {page} from "$app/state";
+    import {pb} from "$lib/pocketbase";
 
     export let data;
     let gal = data?.data?.gal ?? null;
@@ -11,6 +12,20 @@
     let isProcessing = false;
     let processingResults: any = null;
     let processingError: any = null;
+
+    function stripHtml(text:any) {
+        if (typeof text !== 'string') return text;
+
+        // Remove HTML tags and decode HTML entities
+        return text
+            .replace(/<[^>]*>/g, '') // Remove HTML tags
+            .replace(/&nbsp;/g, ' ') // Replace &nbsp; with regular space
+            .replace(/&amp;/g, '&')  // Replace &amp; with &
+            .replace(/&lt;/g, '<')   // Replace &lt; with <
+            .replace(/&gt;/g, '>')   // Replace &gt; with >
+            .replace(/&quot;/g, '"') // Replace &quot; with "
+            .trim(); // Remove leading/trailing whitespace
+    }
 
     function ShortenText(str: string) {
         const charMap: { [key: string]: string } = {
@@ -81,6 +96,11 @@
             processingError = error.message || 'An error occurred during processing';
         } finally {
             isProcessing = false;
+            files = await pb.collection('files').getFullList({
+                filter: `gal = "${page.params.id}"`,
+                sort: "created"
+            });
+            console.log(files);
         }
     }
 </script>
@@ -157,7 +177,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {#each Teritoriu as teritoriu}
                             <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-4 py-2">
-                                <span class="text-green-800 font-medium">{teritoriu}</span>
+                                <span class="text-green-800 font-medium">{stripHtml(teritoriu)}</span>
                             </div>
                         {/each}
                     </div>
@@ -179,7 +199,7 @@
                             <button
                                     onclick={processFiles}
                                     disabled={isProcessing || !gal?.snapshot_config?.sections}
-                                    class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
+                                    class="mt-4 sm:mt-0 cursor-pointer inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
                             >
                                 {#if isProcessing}
                                     <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -60,6 +60,8 @@
                     .map(item => item.expand?.gal)
                     .filter((gal) => gal !== undefined);
                 FavoritesList.set(Favorites);
+            }else{
+                isNotLoggedIn.set(true)
             }
         } catch (error) {
             console.error('Error toggling favorite:', error);
@@ -68,7 +70,7 @@
 
 
 
-    import {FavoritesList,AddedToFav, RemovedFromFav} from '$lib/stores'
+    import {FavoritesList,AddedToFav, RemovedFromFav, isNotLoggedIn} from '$lib/stores'
 
 </script>
 

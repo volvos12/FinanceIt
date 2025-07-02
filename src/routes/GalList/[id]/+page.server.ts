@@ -1,19 +1,23 @@
-import {error} from "@sveltejs/kit";
-import {pb} from "$lib/pocketbase";
+import { error } from "@sveltejs/kit";
+import { pb } from "$lib/pocketbase";
 
 export const load = async ({ params }) => {
     try {
         const id = params.id;
-        
+        const gal = await pb.collection('GALs').getOne(id);
+        const Teritoriu = gal.Acoperire_teritoriala ? gal.Acoperire_teritoriala.split(',') : [];
 
-        const gal = await pb.collection('GALs').getOne(id)
-
-        const Teritoriu = gal.Acoperire_Teritoriala ? gal.Acoperire_Teritoriala.split(',') : [];
+        // Get existing files
+        const files = await pb.collection('files').getFullList({
+            filter: `gal = "${id}"`,
+            sort: "created"
+        });
 
         return {
             data: {
                 gal,
-                Teritoriu
+                Teritoriu,
+                files
             }
         };
     } catch (err) {

@@ -16,7 +16,7 @@
 
 </script>
 
-<div class="bg-white border-b border-gray-100 shadow-sm pb-4 sm:pb-[35px] mb-10 z-30">
+<div class="bg-white border-b border-gray-100 shadow-sm pb-4 sm:pb-[35px] pt-[30px] mb-10 z-30">
     <div class="max-w-7xl mx-auto">
         <!-- Desktop filters -->
         <div class="hidden sm:flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8">

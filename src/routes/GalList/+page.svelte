@@ -46,9 +46,7 @@
 
     $: filteredGALs = GALs.filter(gal => {
         const matchesSearch = $SelectedSearchQuery ? gal.Denumire_GAL.toLowerCase().includes($SelectedSearchQuery.toLowerCase()) : true;
-        const matchesCounty = $selectedCounty
-            ? gal.Judet.split(',').map(item => item.trim()).includes($selectedCounty)
-            : true;
+        const matchesCounty = $selectedCounty ? gal.Judet.split(',').map(item => item.trim()).includes($selectedCounty) : true;
 
         return matchesSearch && matchesCounty;
 
@@ -86,7 +84,7 @@
 
 </script>
 
-<div class="pt-[130px]"></div>
+<div class="pt-[100px]"></div>
 
 {#if $AddedToFav }
     <div transition:fade class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-sm w-full bg-purple-100 border-purple-200 text-purple-700">

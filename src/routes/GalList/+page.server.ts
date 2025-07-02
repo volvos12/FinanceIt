@@ -7,6 +7,7 @@ export const load = async ({ locals }) => {
         const resultList = await pb.collection('GALs').getList(1, totalCount.length, {
             sort: "created",
         });
+
         const GALs = resultList.items;
         return {
             data: {

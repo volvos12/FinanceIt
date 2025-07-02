@@ -161,7 +161,7 @@
             disabled={currentPage === 1}
             aria-label="Pagina Anterioară"
     >
-        <div class="absolute inset-0 rounded-lg border {currentPage === 1 ? 'border-gray-200' : 'border-gray-200 group-hover:border-purple-300'} transition-colors duration-200">
+        <div class="absolute inset-0 rounded-lg border {currentPage === 1 ? 'border-gray-200' : 'border-gray-200 group-hover:border-purple-300'} transition-  duration-200">
         </div>
         <div class="flex items-center">
             <div class="mr-2 {currentPage === 1 ? 'text-gray-300' : 'text-purple-600 group-hover:text-purple-700'}">

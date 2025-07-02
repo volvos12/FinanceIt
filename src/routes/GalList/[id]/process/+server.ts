@@ -1,6 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { pb } from '$lib/pocketbase';
 import { JSDOM } from 'jsdom';
+import { PRIVATE_SUPERUSER_EMAIL, PRIVATE_SUPERUSER_PASSWORD } from '$env/static/private';
+await pb.admins.authWithPassword(PRIVATE_SUPERUSER_EMAIL, PRIVATE_SUPERUSER_PASSWORD);
 
 async function hashContent(content: string): Promise<string> {
     const crypto = await import('crypto');

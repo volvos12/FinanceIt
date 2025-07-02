@@ -38,7 +38,6 @@
                 result = first30 + "...";
             }
         }
-        console.log(result);
         return result;
 
     }

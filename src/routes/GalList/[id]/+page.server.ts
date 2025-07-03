@@ -10,7 +10,7 @@ export const load = async ({ params }) => {
         // Get existing files
         const files = await pb.collection('files').getFullList({
             filter: `gal = "${id}"`,
-            sort: "created"
+            sort: "-created"
         });
 
         return {

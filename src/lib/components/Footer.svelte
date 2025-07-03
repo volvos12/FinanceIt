@@ -51,8 +51,8 @@
             <div>
                 <h3 class="text-xl font-semibold mb-4 text-purple-300">Contact</h3>
                 <ul class="space-y-2 text-gray-300">
-                    <li>Email: contact@fundingmonitor.ro</li>
-                    <li>Telefon: +40 721 234 567</li>
+                    <li>Email: contact@financeit.com</li>
+                    <li>Telefon: +40 700 000 000</li>
                     <li>Adresă: Str. Finanțării nr. 10, București</li>
                 </ul>
             </div>

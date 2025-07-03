@@ -72,15 +72,15 @@
                     <div class="hidden sm:ml-8 sm:flex sm:space-x-6">
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Home</a>
                         <a data-sveltekit-preload-data="hover" href="/GalList" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Galuri</a>
-                        <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Counties</a>
-                        <a href="/" class="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium">Favorites</a>
+                        <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">judete</a>
+                        <a href="/" class="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium">Favorite</a>
                     </div>
                 </div>
 
                 <div class="hidden sm:flex sm:items-center sm:space-x-3">
                     {#if $currentUser}
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                            My Account
+                            Contul Meu
                         </a>
                         <button onclick={(e:Event) => {pb.authStore.clear(); e.preventDefault(); e.stopPropagation();}} class="bg-gray-100 cursor-pointer hover:bg-gray-200 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                             Log Out
@@ -121,8 +121,8 @@
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Home</a>
                     <a data-sveltekit-preload-data="hover" href="/GalList" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Galuri</a>
-                    <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Counties</a>
-                    <a href="/" class="block px-3 py-2 text-base font-medium text-purple-700 hover:text-purple-800 hover:bg-purple-50">Favorites</a>
+                    <a href="/" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Judete</a>
+                    <a href="/" class="block px-3 py-2 text-base font-medium text-purple-700 hover:text-purple-800 hover:bg-purple-50">Favorite</a>
                 </div>
                 <div class="pt-4 pb-3 border-t border-gray-200">
                     {#if $currentUser}
@@ -138,8 +138,8 @@
                             </div>
                         </div>
                         <div class="mt-3 space-y-1">
-                            <a href="/" class="cursor-pointer block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">My Account</a>
-                            <a href="/" class="cursor-pointer block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Log Out</a>
+                            <a href="/" class="cursor-pointer block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">Contul Meu</a>
+                            <a href="/" class="cursor-pointer block px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">LogOut</a>
                         </div>
                     {:else}
                         <div class="space-y-1 px-4">

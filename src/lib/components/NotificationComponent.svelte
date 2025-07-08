@@ -12,7 +12,7 @@
             }
 
             timeout = setTimeout(() => {
-                constant = false;
+                functionName()
             }, 3000);
         } else {
 

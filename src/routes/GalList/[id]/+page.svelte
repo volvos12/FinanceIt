@@ -20,7 +20,7 @@
     let currentPage = $state(1);
     const filesPerPage = 10;
 
-    // Derived values for pagination
+    // Derived values for paginationserve
     const totalPages = $derived(Math.ceil(files.length / filesPerPage));
     const startIndex = $derived((currentPage - 1) * filesPerPage);
     const endIndex = $derived(startIndex + filesPerPage);

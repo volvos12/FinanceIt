@@ -17,4 +17,4 @@ COPY pb_hooks ./pb_hooks/
 EXPOSE 8080
 
 # Run PocketBase
-CMD ["./pocketbase", "serve", "--http=0.0.0.0:8080"]
+CMD ["./pocketbase/pocketbase", "serve", "--http=0.0.0.0:8080"]

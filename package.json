@@ -24,6 +24,8 @@
 		"vite": "^6.2.5"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-cloudflare": "^7.0.5",
+		"@sveltejs/adapter-static": "^3.0.8",
 		"jsdom": "^26.1.0",
 		"pocketbase": "^0.26.0",
 		"puppeteer": "^24.7.2",

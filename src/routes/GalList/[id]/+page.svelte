@@ -8,6 +8,8 @@
     let gal = $state(data?.data?.gal ?? null);
     let Teritoriu = $state(data?.data?.Teritoriu ?? []);
     let files = $state(data?.data?.files ?? []);
+    let oldFiles = files;
+    let oldIds = oldFiles.map(f => f.id).sort();
 
     // Processing state
     let isProcessing = $state(false);
@@ -133,15 +135,17 @@
             processingError = error.message || 'An error occurred during processing';
         } finally {
             isProcessing = false;
-            let oldFiles = files;
             files = await pb.collection('files').getFullList({
                 filter: `gal = "${page.params.id}"`,
                 sort: "-created"
             });
-            if(files === oldFiles){
-                newFilesNotif = true
+            let newIds = files.map(f => f.id).sort();
+            console.log(JSON.stringify(oldIds), JSON.stringify(newIds));
+            if(JSON.stringify(oldIds) === JSON.stringify(newIds)){
+                noNewFiles=true
             }else{
-                noNewFiles = true
+                newFilesNotif=true;
+                oldIds=newIds;
             }
         }
     }

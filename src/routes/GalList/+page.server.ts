@@ -1,23 +1,24 @@
-import {error} from "@sveltejs/kit";
-import {pb} from "$lib/pocketbase";
+import { error } from "@sveltejs/kit";
+import { pb } from "$lib/pocketbase";
 
-export const load = async ({ locals }) => {
-    try {
-        const totalCount = await pb.collection('GALs').getFullList();
-        const resultList = await pb.collection('GALs').getList(1, totalCount.length, {
-            sort: "created",
-        });
+export const load = () => {
+    return {
+        streamed: {
+            GALs: pb.collection('GALs').getFirstListItem('id != ""').then(() => {
 
-        const GALs = resultList.items;
-        return {
-            data: {
-                GALs
-            }
-        };
-    } catch (err) {
-        console.error('Error in load function:', err);
-        throw error(500, {
-            message: 'Error loading data'
-        });
-    }
+                return pb.collection('GALs').getList(1, 1);
+            }).then(firstPage => {
+
+                return pb.collection('GALs').getList(1, firstPage.totalItems, {
+                    sort: "created",
+                });
+            }).then(resultList => {
+                console.log('Server: GALs loaded:', resultList.items.length);
+                return structuredClone(resultList.items);
+            }).catch(err => {
+                console.error('Error loading GALs:', err);
+                throw error(500, { message: 'Error loading data' });
+            })
+        }
+    };
 };

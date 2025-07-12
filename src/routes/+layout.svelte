@@ -7,7 +7,7 @@
     import { onMount } from 'svelte';
     import Footer from "$lib/components/Footer.svelte";
     let brandName = "FinanceIt";
-    let isMenuOpen = $state(true);
+    let isMenuOpen = $state(false);
     let isNavbarVisible = $state(true);
     let lastScrollY = $state(0);
 

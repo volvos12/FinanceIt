@@ -9,15 +9,21 @@
         passwordConfirm?: string;
     }
 
-    export let isLogin: boolean;
-    let formData: AuthForm = {
+    interface Props {
+        isLogin: boolean;
+    }
+
+    let { isLogin = $bindable() }: Props = $props();
+
+    let formData: AuthForm = $state({
         email: "",
         password: "",
         passwordConfirm: ""
-    };
-    let isLoading = false;
-    let errorMessage: string | null = null;
-    let isAuthenticated = pb.authStore.isValid; // Track auth state
+    });
+
+    let isLoading = $state(false);
+    let errorMessage: string | null = $state(null);
+    let isAuthenticated = $state(pb.authStore.isValid);
 
     onMount(() => {
         // Listen for auth state changes
@@ -109,13 +115,13 @@
                 </div>
                 <div class="px-8 py-6 text-center">
                     <button
-                            on:click={goToMainPage}
+                            onclick={goToMainPage}
                             class="group cursor-pointer inline-flex items-center justify-center py-3 px-4 mb-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-md transition-all duration-150 transform hover:-translate-y-0.5"
                     >
                         Go to Main Page
                     </button>
                     <button
-                            on:click={handleLogout}
+                            onclick={handleLogout}
                             class="inline-flex cursor-pointer items-center font-medium text-purple-600 hover:text-purple-500 transition-colors duration-150"
                     >
                         <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -141,7 +147,7 @@
                         {#if errorMessage}
                             <p class="text-red-500 text-sm mb-4 text-center">{errorMessage}</p>
                         {/if}
-                        <form class="space-y-6" on:submit|preventDefault={handleSubmit}>
+                        <form class="space-y-6" onsubmit={handleSubmit}>
                             <!-- Email Field -->
                             <div class="space-y-2">
                                 <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
@@ -270,7 +276,7 @@
                 <div class="px-8 py-6 text-center">
                     <button
                             type="button"
-                            on:click={toggleAuthMode}
+                            onclick={toggleAuthMode}
                             class="inline-flex cursor-pointer items-center font-medium text-purple-600 hover:text-purple-500 transition-colors duration-150"
                     >
                         <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

@@ -7,13 +7,9 @@
     import { onMount } from 'svelte';
     import Footer from "$lib/components/Footer.svelte";
     let brandName = "FinanceIt";
-    let isMenuOpen = $state(false);
+    let isMenuOpen = $state(true);
     let isNavbarVisible = $state(true);
     let lastScrollY = $state(0);
-
-    const toggleMenu = () => {
-        isMenuOpen = !isMenuOpen;
-    };
 
     let navbar:any;
 
@@ -96,7 +92,7 @@
                 </div>
                 <div class="flex items-center sm:hidden">
                     <button
-                            onclick={(e:Event) => {toggleMenu; e.preventDefault(); e.stopPropagation();}}
+                            onclick={(e:Event) => {isMenuOpen = !isMenuOpen; e.preventDefault(); e.stopPropagation();}}
                             class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none"
                             aria-expanded={isMenuOpen}
                     >

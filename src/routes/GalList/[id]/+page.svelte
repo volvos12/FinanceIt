@@ -159,9 +159,11 @@
     <div class="pt-24"></div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!--Back button -->
+
         <div class="mb-6">
             <button
+                    data-sveltekit-preload-data="hover"
+                    data-sveltekit-preload-code="hover"
                     onclick={goBack}
                     class="inline-flex cursor-pointer items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-sm hover:shadow-md"
             >

@@ -24,6 +24,7 @@
 		"vite": "^6.2.5"
 	},
 	"dependencies": {
+		"@sentry/sveltekit": "^9.38.0",
 		"@sveltejs/adapter-cloudflare": "^7.0.5",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"jsdom": "^26.1.0",

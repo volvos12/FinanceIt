@@ -155,11 +155,9 @@
 <NotificationComponent constant={noNewFiles} functionName={()=>{noNewFiles=false}} message="Nu Au Fost Adaugate Fisiere Noi" GoodOrBad={true}/>
 
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-    <!-- Header spacer -->
     <div class="pt-24"></div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!--Back button -->
         <div class="mb-6">
             <button
                     data-sveltekit-preload-data="hover"
@@ -225,9 +223,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Content -->
             <div class="lg:col-span-2 space-y-8">
-                <!-- Territory Information -->
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center mb-6">
                         <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mr-4">
@@ -247,7 +243,6 @@
                     </div>
                 </div>
 
-                <!-- Files Section -->
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                     <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -289,7 +284,6 @@
                     </div>
 
                     <div class="p-6">
-                        <!-- Processing Status -->
                         {#if processingError}
                             <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                                 <div class="flex">
@@ -349,9 +343,8 @@
                                         Pagina <span class="font-medium">{currentPage}</span> din <span class="font-medium">{totalPages}</span>
                                     </div>
 
-                                    <!-- Navigation Controls -->
+
                                     <div class="flex items-center space-x-2">
-                                        <!-- Previous Button -->
                                         <button
                                                 onclick={prevPage}
                                                 disabled={currentPage === 1}
@@ -380,7 +373,6 @@
                                             {/each}
                                         </div>
 
-                                        <!-- Next Button -->
                                         <button
                                                 onclick={nextPage}
                                                 disabled={currentPage === totalPages}
@@ -404,9 +396,8 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
+
             <div class="space-y-8">
-                <!-- Contact Information -->
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center mb-6">
                         <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-4">
@@ -418,7 +409,6 @@
                     </div>
 
                     <div class="space-y-6">
-                        <!-- Location -->
                         <div>
                             <h4 class="font-medium text-gray-900 mb-3 flex items-center">
                                 <svg class="w-5 h-5 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,7 +420,6 @@
                             <p class="text-gray-700 capitalize bg-gray-50 rounded-lg p-3">{gal?.Sediu_social}</p>
                         </div>
 
-                        <!-- Contact Details -->
                         <div>
                             <h4 class="font-medium text-gray-900 mb-3">Informații de contact</h4>
                             <div class="space-y-3">
@@ -461,7 +450,6 @@
                     </div>
                 </div>
 
-                <!-- Map Section -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                     <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 border-b border-gray-200">
                         <div class="flex items-center">

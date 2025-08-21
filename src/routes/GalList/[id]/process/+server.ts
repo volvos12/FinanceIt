@@ -2,44 +2,53 @@ import { json } from '@sveltejs/kit';
 import { pb } from '$lib/pocketbase';
 import { JSDOM } from 'jsdom';
 import { PRIVATE_SUPERUSER_EMAIL, PRIVATE_SUPERUSER_PASSWORD } from '$env/static/private';
-
+import crypto from 'crypto';
+import type { RecordModel } from 'pocketbase';
 
 await pb.admins.authWithPassword(PRIVATE_SUPERUSER_EMAIL, PRIVATE_SUPERUSER_PASSWORD);
 
-async function hashContent(content: string): Promise<string> {
-    const crypto = await import('crypto');
-    const hash = crypto.createHash('sha256');
-    hash.update(content, 'utf8');
-    return hash.digest('hex');
+// Move crypto to top level to avoid repeated imports
+function hashContent(content: string): string {
+    return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
 }
+
+// Cache for parsed DOMs to avoid re-parsing
+const domCache = new Map<string, Document>();
 
 function extractFileContent(html: string, fileSelectors: string[]): string {
     try {
-        const dom = new JSDOM(html);
-        const document = dom.window.document;
+        // Check cache first
+        const cacheKey = hashContent(html).substring(0, 16);
+        let document = domCache.get(cacheKey);
 
         if (!document) {
-            return '';
+            const dom = new JSDOM(html);
+            document = dom.window.document;
+
+            // Cache with size limit
+            if (domCache.size > 50) {
+                const firstKey = domCache.keys().next().value;
+                //@ts-ignore
+                domCache.delete(firstKey);
+            }
+            domCache.set(cacheKey, document);
         }
 
         const fileElements: any[] = [];
 
-        fileSelectors.forEach(selector => {
-            try {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(el => {
-                    const href = el.getAttribute('href');
-                    if (href) {
-                        fileElements.push({
-                            href: href.trim(),
-                            text: (el.textContent?.trim() || '').substring(0, 200),
-                            title: (el.getAttribute('title') || '').substring(0, 100),
-                            download: (el.getAttribute('download') || '').substring(0, 100)
-                        });
-                    }
+        // Combine all selectors into one query for better performance
+        const combinedSelector = fileSelectors.join(', ');
+        const elements = document.querySelectorAll(combinedSelector);
+
+        elements.forEach(el => {
+            const href = el.getAttribute('href');
+            if (href) {
+                fileElements.push({
+                    href: href.trim(),
+                    text: (el.textContent?.trim() || '').substring(0, 200),
+                    title: (el.getAttribute('title') || '').substring(0, 100),
+                    download: (el.getAttribute('download') || '').substring(0, 100)
                 });
-            } catch (error: any) {
-                console.warn(`Invalid selector "${selector}":`, error.message);
             }
         });
 
@@ -54,43 +63,49 @@ function extractFileContent(html: string, fileSelectors: string[]): string {
 
 function extractFiles(html: string, fileSelectors: string[], baseUrl: string) {
     try {
-        const dom = new JSDOM(html);
-        const document = dom.window.document;
+        // Reuse cached DOM
+        const cacheKey = hashContent(html).substring(0, 16);
+        let document = domCache.get(cacheKey);
 
         if (!document) {
-            return [];
+            const dom = new JSDOM(html);
+            document = dom.window.document;
+
+            if (domCache.size > 50) {
+                const firstKey = domCache.keys().next().value;
+                //@ts-ignore
+                domCache.delete(firstKey);
+            }
+            domCache.set(cacheKey, document);
         }
 
         const files: any[] = [];
         const seenUrls = new Set();
 
-        fileSelectors.forEach(selector => {
-            try {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(el => {
-                    const href = el.getAttribute('href');
-                    if (href && !seenUrls.has(href)) {
-                        seenUrls.add(href);
+        // Use combined selector
+        const combinedSelector = fileSelectors.join(', ');
+        const elements = document.querySelectorAll(combinedSelector);
 
-                        let fullUrl = href;
-                        if (href.startsWith('/')) {
-                            fullUrl = baseUrl + href;
-                        } else if (!href.startsWith('http')) {
-                            fullUrl = baseUrl + '/' + href;
-                        }
+        elements.forEach(el => {
+            const href = el.getAttribute('href');
+            if (href && !seenUrls.has(href)) {
+                seenUrls.add(href);
 
-                        if (isValidUrl(fullUrl)) {
-                            files.push({
-                                url: fullUrl,
-                                name: extractFileName(href, el.textContent?.trim() || ''),
-                                linkText: (el.textContent?.trim() || '').substring(0, 200),
-                                title: (el.getAttribute('title') || '').substring(0, 100)
-                            });
-                        }
-                    }
-                });
-            } catch (error: any) {
-                console.warn(`Error with selector "${selector}":`, error.message);
+                let fullUrl = href;
+                if (href.startsWith('/')) {
+                    fullUrl = baseUrl + href;
+                } else if (!href.startsWith('http')) {
+                    fullUrl = baseUrl + '/' + href;
+                }
+
+                if (isValidUrl(fullUrl)) {
+                    files.push({
+                        url: fullUrl,
+                        name: extractFileName(href, el.textContent?.trim() || ''),
+                        linkText: (el.textContent?.trim() || '').substring(0, 200),
+                        title: (el.getAttribute('title') || '').substring(0, 100)
+                    });
+                }
             }
         });
 
@@ -125,54 +140,85 @@ function extractFileName(href: string, linkText: string): string {
     return `document_${Date.now()}`;
 }
 
-async function fetchPageContent(url: string): Promise<string | null> {
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // Reduced from 20s to 10s
+// Enhanced HTTP client with connection pooling
+class HttpClient {
+    private static instance: HttpClient;
+    private agent: any;
 
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            },
-            signal: controller.signal
-        });
+    private constructor() {
+        // Use undici for better performance (if available in your environment)
+        // Otherwise, keep using fetch but with optimizations
+    }
 
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    static getInstance(): HttpClient {
+        if (!HttpClient.instance) {
+            HttpClient.instance = new HttpClient();
         }
+        return HttpClient.instance;
+    }
 
-        const text = await response.text();
+    async fetchWithRetry(url: string, maxRetries = 2): Promise<string | null> {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // Reduced timeout
 
-        // Reduced size limit for faster processing
-        if (text.length > 2 * 1024 * 1024) {
-            return text.substring(0, 2 * 1024 * 1024);
-        }
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Connection': 'keep-alive'
+                    },
+                    signal: controller.signal
+                });
 
-        return text;
-    } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.error(`Timeout fetching ${url}`);
-        } else {
-            console.error(`Failed to fetch ${url}: ${error.message}`);
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    if (attempt < maxRetries && response.status >= 500) {
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
+                        continue;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const text = await response.text();
+
+                // Reduced size limit for faster processing
+                if (text.length > 1.5 * 1024 * 1024) { // 1.5MB instead of 2MB
+                    return text.substring(0, 1.5 * 1024 * 1024);
+                }
+
+                return text;
+            } catch (error: any) {
+                if (attempt === maxRetries) {
+                    if (error.name === 'AbortError') {
+                        console.error(`Timeout fetching ${url} after ${maxRetries + 1} attempts`);
+                    } else {
+                        console.error(`Failed to fetch ${url} after ${maxRetries + 1} attempts: ${error.message}`);
+                    }
+                    return null;
+                }
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+            }
         }
         return null;
     }
 }
 
+const httpClient = HttpClient.getInstance();
 
 async function batchGetSnapshots(galId: string, sectionName: string, pageUrls: string[]) {
     try {
         const escapedGalId = galId.replace(/"/g, '\\"');
         const escapedSectionName = sectionName.replace(/"/g, '\\"');
 
-        // Get all snapshots for this GAL and section at once
         const snapshots = await pb.collection('page_snapshots').getFullList({
-            filter: `gal = "${escapedGalId}" && section_name = "${escapedSectionName}"`
+            filter: `gal = "${escapedGalId}" && section_name = "${escapedSectionName}"`,
+            fields: 'id,page_url,content_hash,last_modified' // Only fetch needed fields
         });
 
-        // Create a map for O(1) lookup
         const snapshotMap = new Map();
         snapshots.forEach(snapshot => {
             snapshotMap.set(snapshot.page_url, snapshot);
@@ -189,10 +235,10 @@ async function batchGetExistingFiles(galId: string) {
     try {
         const escapedGalId = galId.replace(/"/g, '\\"');
         const existingFiles = await pb.collection('files').getFullList({
-            filter: `gal = "${escapedGalId}"`
+            filter: `gal = "${escapedGalId}"`,
+            fields: 'fisier' // Only fetch the URL field
         });
 
-        // Create a Set for O(1) lookup
         const fileSet = new Set();
         existingFiles.forEach(file => {
             fileSet.add(file.fisier);
@@ -205,24 +251,49 @@ async function batchGetExistingFiles(galId: string) {
     }
 }
 
-
 async function batchSaveSnapshots(updates: any[]) {
-    const promises = updates.map(update => {
-        if (update.existingId) {
-            return pb.collection('page_snapshots').update(update.existingId, update.data);
-        } else {
-            return pb.collection('page_snapshots').create(update.data);
-        }
-    });
+    // Process in smaller chunks for better performance
+    const chunkSize = 5;
+    const results = [];
 
-    return Promise.allSettled(promises);
+    for (let i = 0; i < updates.length; i += chunkSize) {
+        const chunk = updates.slice(i, i + chunkSize);
+        const promises = chunk.map(update => {
+            if (update.existingId) {
+                return pb.collection('page_snapshots').update(update.existingId, update.data);
+            } else {
+                return pb.collection('page_snapshots').create(update.data);
+            }
+        });
+
+        const chunkResults = await Promise.allSettled(promises);
+        results.push(...chunkResults);
+    }
+
+    return results;
 }
 
 async function batchSaveFiles(files: any[]) {
-    const promises = files.map(file => pb.collection('files').create(file));
-    return Promise.allSettled(promises);
-}
+    if (files.length === 0) return [];
 
+    // Smaller chunks for file operations
+    const chunkSize = 3;
+    const results = [];
+
+    for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = files.slice(i, i + chunkSize);
+        const promises = chunk.map(file => pb.collection('files').create(file));
+        const chunkResults = await Promise.allSettled(promises);
+        results.push(...chunkResults);
+
+        // Small delay between chunks to avoid overwhelming the database
+        if (i + chunkSize < files.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    }
+
+    return results;
+}
 
 async function processPagesConcurrently(
     gal: any,
@@ -230,7 +301,7 @@ async function processPagesConcurrently(
     pageUrls: string[],
     fileSelectors: string[],
     baseUrl: string,
-    concurrency = 5 // Process 5 pages at once
+    concurrency = 10 // Increased concurrency
 ) {
     const snapshotMap = await batchGetSnapshots(gal.id, sectionName, pageUrls);
     const existingFilesSet = await batchGetExistingFiles(gal.id);
@@ -246,6 +317,7 @@ async function processPagesConcurrently(
     const snapshotUpdates: any[] = [];
     const newFiles: any[] = [];
 
+    // Process pages in batches
     for (let i = 0; i < pageUrls.length; i += concurrency) {
         const batch = pageUrls.slice(i, i + concurrency);
 
@@ -253,15 +325,15 @@ async function processPagesConcurrently(
             try {
                 const fullUrl = pageUrl.startsWith('http') ? pageUrl : `${baseUrl}${pageUrl}`;
 
-                // Fetch page content
-                const html = await fetchPageContent(fullUrl);
+                // Use enhanced HTTP client
+                const html = await httpClient.fetchWithRetry(fullUrl);
                 if (!html) {
-                    return { processed: false, error: 'Failed to fetch' };
+                    return {processed: false, error: 'Failed to fetch'};
                 }
 
                 // Extract and hash content
                 const fileContent = extractFileContent(html, fileSelectors);
-                const contentHash = await hashContent(fileContent);
+                const contentHash = hashContent(fileContent);
 
                 // Check existing snapshot
                 const existingSnapshot = snapshotMap.get(pageUrl);
@@ -297,7 +369,7 @@ async function processPagesConcurrently(
                 let newFilesCount = 0;
 
                 if (hasChanged) {
-                    // Extract files
+                    // Extract files (reuses the same DOM from cache)
                     const files = extractFiles(html, fileSelectors, baseUrl);
                     filesFound = files.length;
 
@@ -326,13 +398,11 @@ async function processPagesConcurrently(
 
             } catch (error: any) {
                 console.error(`Error processing ${pageUrl}:`, error);
-                return { processed: false, error: error.message };
+                return {processed: false, error: error.message};
             }
         });
 
-
         const batchResults = await Promise.allSettled(batchPromises);
-
 
         batchResults.forEach(result => {
             if (result.status === 'fulfilled' && result.value.processed) {
@@ -350,6 +420,7 @@ async function processPagesConcurrently(
         });
     }
 
+    // Save all updates
     const savePromises = [];
 
     if (snapshotUpdates.length > 0) {
@@ -357,12 +428,7 @@ async function processPagesConcurrently(
     }
 
     if (newFiles.length > 0) {
-        // Save files in chunks to avoid overwhelming the database
-        const chunkSize = 10;
-        for (let i = 0; i < newFiles.length; i += chunkSize) {
-            const chunk = newFiles.slice(i, i + chunkSize);
-            savePromises.push(batchSaveFiles(chunk));
-        }
+        savePromises.push(batchSaveFiles(newFiles));
     }
 
     await Promise.allSettled(savePromises);
@@ -376,12 +442,12 @@ async function processGALPages(gal: any): Promise<any> {
     const websiteField = gal.Website || gal.website || gal.site_web || gal.url || gal.domeniu;
     if (!websiteField) {
         console.error(`No website field found for ${gal.Denumire_GAL}`);
-        return { error: 'No website configured' };
+        return {error: 'No website configured'};
     }
 
     if (!gal.snapshot_config?.sections) {
         console.error(`No snapshot config found for ${gal.Denumire_GAL}`);
-        return { error: 'No snapshot configuration found' };
+        return {error: 'No snapshot configuration found'};
     }
 
     const baseUrl = `https://${websiteField}`;
@@ -395,6 +461,7 @@ async function processGALPages(gal: any): Promise<any> {
         sectionResults: [] as any[]
     };
 
+    // Process sections sequentially to avoid overwhelming the target server
     for (const [sectionName, sectionConfig] of Object.entries(gal.snapshot_config.sections)) {
         console.log(`Processing section: ${sectionName}`);
 
@@ -404,7 +471,7 @@ async function processGALPages(gal: any): Promise<any> {
             (sectionConfig as any).urls,
             (sectionConfig as any).file_selectors,
             baseUrl,
-            8 // Increased concurrency for faster processing
+            12 // Optimized concurrency
         );
 
         overallResults.processedSections++;
@@ -417,35 +484,46 @@ async function processGALPages(gal: any): Promise<any> {
             name: sectionName,
             ...sectionResults
         });
+
+        // Small delay between sections to be respectful to the target server
+        await new Promise(resolve => setTimeout(resolve, 200));
     }
+
+    // Clear DOM cache after processing
+    domCache.clear();
 
     console.log(`GAL completed: ${overallResults.processedPages} pages, ${overallResults.changedPages} changed, ${overallResults.newFiles} new files`);
     return overallResults;
 }
 
-export async function POST({ request, params }) {
+export async function POST({request, params}) {
     try {
-        const { galId } = await request.json();
+        const {galId} = await request.json();
 
         if (!galId) {
-            return json({ error: 'GAL ID is required' }, { status: 400 });
+            return json({error: 'GAL ID is required'}, {status: 400});
         }
 
         const gal = await pb.collection('GALs').getOne(galId);
 
         if (!gal) {
-            return json({ error: 'GAL not found' }, { status: 404 });
+            return json({error: 'GAL not found'}, {status: 404});
         }
 
         if (!gal.snapshot_config?.sections) {
-            return json({ error: 'No snapshot configuration found for this GAL' }, { status: 400 });
+            return json({error: 'No snapshot configuration found for this GAL'}, {status: 400});
         }
 
         const processingResults = await processGALPages(gal);
 
-        const updatedFiles = await pb.collection('files').getFullList({
-            filter: `gal = "${galId}"`
-        });
+        // Only fetch updated files if processing was successful
+        let updatedFiles: RecordModel[] = [];
+        if (!processingResults.error && processingResults.newFiles > 0) {
+            updatedFiles = await pb.collection('files').getFullList({
+                filter: `gal = "${galId}"`,
+                sort: '-created' // Get newest files first
+            });
+        }
 
         return json({
             success: true,

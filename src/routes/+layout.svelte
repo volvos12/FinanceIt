@@ -69,7 +69,7 @@
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Home</a>
                         <a data-sveltekit-preload-data="hover" href="/GalList" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Galuri</a>
                         <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">judete</a>
-                        <a href="/" class="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium">Favorite</a>
+                        <a href="/Map" class="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium">Map</a>
                     </div>
                 </div>
 
